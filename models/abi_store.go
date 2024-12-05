@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/google/uuid"
 )
 
 var (
@@ -31,6 +32,5 @@ func GetABI(abiID string) (abi.ABI, bool) {
 }
 
 func generateUniqueID() string {
-	//TODO(LONGS): implement a real UUID or hash generator
-	return "unique-id-placeholder"
+	return uuid.New().String()
 }
