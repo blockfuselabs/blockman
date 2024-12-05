@@ -1,6 +1,6 @@
 # BlockMan: Blockchain ABI Interaction Toolkit
 
-Blockman is a developer tool for interacting with Ethereum smart contracts via their Application Binary Interface (ABI). Inspired by Postman, it allows developers to upload ABIs, list contract functions, and call them directly through a simple API interface.
+Blockman is a developer tool for interacting with Ethereum smart contracts via their Application Binary Interface (ABI). Inspired by Postman, it allows developers to upload ABIs, list contract functions, and call them directly through a simple web or desktop interface.
 
 ### Features
 - Upload ABIs: Easily upload and parse Ethereum contract ABIs.
