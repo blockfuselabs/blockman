@@ -11,11 +11,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ABI struct {
+	ABI []interface{} `json:"abi"`
+}
+
 // UploadABI handles ABI upload and parsing
 func UploadABI(c *gin.Context) {
 	// Define a struct to match the incoming request format
 	var input struct {
-		ABI string `json:"abi" binding:"required"`
+		ABI json.RawMessage `json:"abi" binding:"required"`
 	}
 
 	// Bind the JSON input
@@ -27,28 +31,8 @@ func UploadABI(c *gin.Context) {
 		return
 	}
 
-	// Parse the stringified ABI JSON
-	var abiArray []interface{}
-	if err := json.Unmarshal([]byte(input.ABI), &abiArray); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Failed to parse ABI",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	// Convert to JSON bytes for ABI parsing
-	abiJSON, err := json.Marshal(abiArray)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Failed to re-encode ABI",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	// Parse ABI using go-ethereum's abi package
-	contractABI, err := abi.JSON(bytes.NewReader(abiJSON))
+	// Parse ABI directly using go-ethereum's abi package
+	contractABI, err := abi.JSON(bytes.NewReader(input.ABI))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid ABI format",
