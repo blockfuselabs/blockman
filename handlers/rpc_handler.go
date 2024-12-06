@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/hex"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/blockfuselabs/blockman/models"
 
@@ -29,6 +31,12 @@ func CallFunction(c *gin.Context) {
 	parsedABI, exists := models.GetABI(input.ABIID)
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ABI not found"})
+		return
+	}
+
+	// Validate contract address
+	if input.ContractAddr == "" || !isValidEthereumAddress(input.ContractAddr) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Valid contract address is required"})
 		return
 	}
 
@@ -61,4 +69,15 @@ func CallFunction(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func isValidEthereumAddress(address string) bool {
+	// Check if the address starts with '0x' and is 42 characters long
+	if !strings.HasPrefix(address, "0x") || len(address) != 42 {
+		return false
+	}
+
+	// Validate the address contains only hexadecimal characters after '0x'
+	matched, _ := regexp.MatchString("^0x[0-9a-fA-F]{40}$", address)
+	return matched
 }
