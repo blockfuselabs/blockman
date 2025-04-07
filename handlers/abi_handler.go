@@ -85,6 +85,59 @@ func ListFunctions(c *gin.Context) {
 	})
 }
 
+// ListABIs returns a list of all stored ABIs with their metadata
+func ListABIs(c *gin.Context) {
+	abis := models.ListABIs()
+
+	// Create a simplified response structure
+	response := make(map[string]gin.H, len(abis))
+	for id, record := range abis {
+		// Get function count
+		functions := extractFunctions(record.ABI)
+
+		response[id] = gin.H{
+			"created_at":      record.CreatedAt,
+			"last_used":       record.LastUsed,
+			"function_count":  len(functions),
+			"has_constructor": record.ABI.Constructor.Sig != "",
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"abis":  response,
+		"total": len(abis),
+	})
+}
+
+// RemoveABI deletes an ABI from storage
+func RemoveABI(c *gin.Context) {
+	abiID := c.Param("id")
+	if abiID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ABI ID is required",
+		})
+		return
+	}
+
+	err := models.RemoveABI(abiID)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if err == models.ErrABINotFound {
+			status = http.StatusNotFound
+		}
+
+		c.JSON(status, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "ABI removed successfully",
+		"abi_id":  abiID,
+	})
+}
+
 // FunctionDetail represents a detailed view of a contract function
 type FunctionDetail struct {
 	Name     string           `json:"name"`
